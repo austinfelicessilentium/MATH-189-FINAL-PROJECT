@@ -1,0 +1,718 @@
+---
+title: "Final Project"
+author: "Xueyi Wan Yishan Li Austin John Felices"
+date: "06/12/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read the data
+```{r}
+data_train=read.table("spam-train.txt",header = FALSE,sep=",")
+data_test=read.table("spam-test.txt",header = FALSE,sep=",")
+```
+
+## 1) Standardize the columns so that they all have zero mean and unit variance;
+```{r}
+std_data_train = data_train
+std_data_train[c(1:57)] = scale(std_data_train[c(1:57)])
+
+std_data_test = data_test
+std_data_test[c(1:57)] = scale(std_data_test[c(1:57)])
+#testing the data for mean with colMeans() and apply(,2,sd)
+```
+
+## 2) Transform the features using log(xij + 1)
+```{r}
+log_data_test = data_test
+for(i in 1:1534){
+  for(j in 1:57){
+    log_data_test[i,j] = log(log_data_test[i,j]+1)
+  }
+}
+
+log_data_train = data_train
+for(i in 1:1534){
+  for(j in 1:57){
+    log_data_train[i,j] = log(log_data_train[i,j]+1)
+  }
+}
+```
+
+## 3) Discretize each feature using I(xij > 0).
+Version1
+
+```{r}
+data_train_dis=data.matrix(data_train)
+data_train_dis[,-58]=0+(data_train_dis[,-58]>0)
+data_train_dis <- as.data.frame(data_train_dis)
+
+data_test_dis=data.matrix(data_test)
+data_test_dis[,-58]=0+(data_test_dis[,-58]>0)
+data_test_dis <- as.data.frame(data_test_dis)
+```
+
+\newpage
+# Part (a)
+
+For each version of the data, visualize it using the tools introduced in the class.
+
+## version 1, test data
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:12){
+  plot(std_data_test[,i], type = 'l')
+}
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(3,4))
+for(i in 13:24){
+  plot(std_data_test[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 25:36){
+  plot(std_data_test[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 37:48){
+  plot(std_data_test[,i], type = 'l')
+}
+par(mfrow=c(3,3))
+for(i in 49:57){
+  plot(std_data_test[,i], type = 'l')
+}
+```
+\newpage
+## Version 1, train data
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:12){
+  plot(std_data_train[,i], type = 'l')
+}
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(3,4))
+for(i in 13:24){
+  plot(std_data_train[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 25:36){
+  plot(std_data_train[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 37:48){
+  plot(std_data_train[,i], type = 'l')
+}
+par(mfrow=c(3,3))
+for(i in 49:57){
+  plot(std_data_train[,i], type = 'l')
+}
+```
+\newpage
+## Version 2, test data
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:12){
+  plot(log_data_test[,i], type = 'l')
+}
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(3,4))
+for(i in 13:24){
+  plot(log_data_test[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 25:36){
+  plot(log_data_test[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 37:48){
+  plot(log_data_test[,i], type = 'l')
+}
+par(mfrow=c(3,3))
+for(i in 49:57){
+  plot(log_data_test[,i], type = 'l')
+}
+```
+\newpage
+## Version 2, train data
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:12){
+  plot(log_data_train[,i], type = 'l')
+}
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(3,4))
+for(i in 13:24){
+  plot(log_data_train[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 25:36){
+  plot(log_data_train[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 37:48){
+  plot(log_data_train[,i], type = 'l')
+}
+par(mfrow=c(3,3))
+for(i in 49:57){
+  plot(log_data_train[,i], type = 'l')
+}
+```
+
+\newpage
+## Version 3, test data
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:12){
+  plot(data_test_dis[,i], type = 'l')
+}
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(3,4))
+for(i in 13:24){
+  plot(data_test_dis[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 25:36){
+  plot(data_test_dis[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 37:48){
+  plot(data_test_dis[,i], type = 'l')
+}
+par(mfrow=c(3,3))
+for(i in 49:57){
+  plot(data_test_dis[,i], type = 'l')
+}
+```
+\newpage
+## Version 3, train data
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:12){
+  plot(data_train_dis[,i], type = 'l')
+}
+```
+
+```{r, echo=FALSE}
+par(mfrow=c(3,4))
+for(i in 13:24){
+  plot(data_train_dis[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 25:36){
+  plot(data_train_dis[,i], type = 'l')
+}
+par(mfrow=c(3,4))
+for(i in 37:48){
+  plot(data_train_dis[,i], type = 'l')
+}
+par(mfrow=c(3,3))
+for(i in 49:57){
+  plot(data_train_dis[,i], type = 'l')
+}
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+\newpage
+# Part (b)
+
+For each version of the data, fit a logistic regression model. Interpret the results, and report the classification errors on both the training and test sets. Do any of the 57 features/predictors appear to be statistically significant? If so, which ones? (Hint: consider this as a multiple testing problem).
+
+## version 1 standardized dataset
+
+```{r}
+# generalized linear model
+glm.fits_1 <- glm(V58 ~ ., data = std_data_train, family = binomial)
+                        # store the results of linear regression
+#summary(glm.fits_1)
+```
+
+```{r p-value}
+# adjust the p-values using the BH procedure
+p_val_1 <- summary(glm.fits_1)$coef[, "Pr(>|z|)"]
+p_BH_1 <- p.adjust(p_val_1, method = "BH")
+p_BH_1 <- p_BH_1[-1]
+```
+
+Among the 57 features, after applying the BH method, the statisticaly significant predictors are listed below:
+
+  * extremely significant (***): `r which(p_BH_1 <= 0.001)`
+  * moderately significant (**): `r which(p_BH_1 <= 0.01 & p_BH_1 > 0.001)`
+  * slightly significant (*): `r which(p_BH_1 <= 0.1 & p_BH_1 > 0.01)`
+
+```{r}
+# fit the logistic regression model on the training dataset
+glm.probs_train_1 <- predict(glm.fits_1, std_data_train, type = "response")
+        # this gives a vector with numbers between 0 and 1
+glm.pred_train_1 <- rep(0, dim(std_data_train)[1])
+glm.pred_train_1[glm.probs_train_1 >= 0.5] = 1
+        # now we have a vector with only "1(spam)" and "0(no-spam)"
+
+# error rate on training data set
+mean(glm.pred_train_1 != std_data_train$V58) 
+```
+
+
+```{r}
+# fit the logistic regression model on the testing dataset
+glm.probs_test_1 <- predict(glm.fits_1, std_data_test, type = "response")
+        # this gives a vector with numbers between 0 and 1
+glm.pred_test_1 <- rep(0, dim(std_data_test)[1])
+glm.pred_test_1[glm.probs_test_1 >= 0.5] = 1
+        # now we have a vector with only "1(spam)" and "0(no-spam)"
+
+# error rate on testing data set
+mean(glm.pred_test_1 != std_data_test$V58)
+```
+
+\newpage
+## Version 2 transformed dataset
+```{r}
+# generalized linear model
+glm.fits_2 <- glm(V58 ~ ., data = log_data_train, family = binomial)
+                        # store the results of linear regression
+#summary(glm.fits_2)
+
+# adjust the p-values using the BH procedure
+p_val_2 <- summary(glm.fits_2)$coef[, "Pr(>|z|)"]
+p_BH_2 <- p.adjust(p_val_2, method = "BH")
+p_BH_2 <- p_BH_2[-1]
+```
+
+Among the 57 features, the statisticaly significant predictors are listed below:
+
+  * extremely significant (***): `r which(p_BH_2 <= 0.001)`
+  * moderately significant (**): `r which(p_BH_2 <= 0.01 & p_BH_2 > 0.001)`
+  * slightly significant (*): `r which(p_BH_2 <= 0.1 & p_BH_2 > 0.01)`
+
+```{r}
+# fit the logistic regression model on the training dataset
+glm.probs_train_2 <- predict(glm.fits_2, log_data_train, type = "response")
+        # this gives a vector with numbers between 0 and 1
+glm.pred_train_2 <- rep(0, dim(log_data_train)[1])
+glm.pred_train_2[glm.probs_train_2 >= 0.5] = 1
+        # now we have a vector with only "1(spam)" and "0(no-spam)"
+
+# error rate on training data set
+mean(glm.pred_train_2 != log_data_train$V58) 
+```
+
+```{r}
+# fit the logistic regression model on the testing dataset
+glm.probs_test_2 <- predict(glm.fits_2, log_data_test, type = "response")
+        # this gives a vector with numbers between 0 and 1
+glm.pred_test_2 <- rep(0, dim(log_data_test)[1])
+glm.pred_test_2[glm.probs_test_2 >= 0.5] = 1
+        # now we have a vector with only "1(spam)" and "0(no-spam)"
+
+# error rate on testing data set
+mean(glm.pred_test_2 != log_data_test$V58)
+```
+
+\newpage
+## Version 3 discretized dataset
+
+```{r}
+# generalized linear model
+glm.fits_3 <- glm(V58 ~ ., data = data_train_dis, family = binomial)
+                        # store the results of linear regression
+#summary(glm.fits_3)
+
+# adjust the p-values using the BH procedure
+p_val_3 <- summary(glm.fits_3)$coef[, "Pr(>|z|)"]
+p_BH_3 <- p.adjust(p_val_3, method = "BH")
+p_BH_3 <- p_BH_3[-1]
+```
+
+Among the 57 features, the statisticaly significant predictors are listed below:
+
+  * extremely significant (***): `r which(p_BH_3 <= 0.001)`
+  * moderately significant (**): `r which(p_BH_3 <= 0.01 & p_BH_3 > 0.001)`
+  * slightly significant (*): `r which(p_BH_3 <= 0.1 & p_BH_3 > 0.01)`
+
+```{r}
+# fit the logistic regression model on the training dataset
+glm.probs_train_3 <- predict(glm.fits_3, data_train_dis, type = "response")
+        # this gives a vector with numbers between 0 and 1
+glm.pred_train_3 <- rep(0, dim(data_train_dis)[1])
+glm.pred_train_3[glm.probs_train_3 >= 0.5] = 1
+        # now we have a vector with only "1(spam)" and "0(no-spam)"
+
+# error rate on training data set
+mean(glm.pred_train_3 != data_train_dis$V58) 
+```
+
+```{r}
+# fit the logistic regression model on the testing dataset
+glm.probs_test_3 <- predict(glm.fits_3, data_test_dis, type = "response")
+        # this gives a vector with numbers between 0 and 1
+glm.pred_test_3 <- rep(0, dim(data_test_dis)[1])
+glm.pred_test_3[glm.probs_test_3 >= 0.5] = 1
+        # now we have a vector with only "1(spam)" and "0(no-spam)"
+
+# error rate on testing data set
+mean(glm.pred_test_3 != data_test_dis$V58)
+```
+
+\newpage
+# Part (c)
+
+Apply both linear and quadratic discriminant analysis methods to the standardized data, and the log transformed data. What are the classification errors (training and test)?
+
+## Version 1 standardized dataset
+
+```{r}
+library(MASS)
+
+# Generate Linear Discriminant Analysis Classifier
+lda.fit_1 <- lda(V58 ~ ., data = std_data_train)
+
+#Generate Quadratic Discriminant Analysis Classifier
+qda.fit_1 <- qda(V58 ~ ., data = std_data_train)  
+
+# apply the LDA and QDA classifier to the training dataset
+lda.prep_train_1 <- predict(lda.fit_1, std_data_train)
+lda.class_train_1 <- lda.prep_train_1$class 
+
+qda.prep_train_1 <- predict(qda.fit_1, std_data_train)
+qda.class_train_1 <- qda.prep_train_1$class
+
+# training error rate
+mean(lda.class_train_1 != std_data_train$V58) # LDA
+mean(qda.class_train_1 != std_data_train$V58) # QDA
+```
+
+```{r}
+# apply the LDA and QDA classifier to the testing dataset
+lda.prep_test_1 <- predict(lda.fit_1, std_data_test)
+lda.class_test_1 <- lda.prep_test_1$class 
+
+qda.prep_test_1 <- predict(qda.fit_1, std_data_test)
+qda.class_test_1 <- qda.prep_test_1$class
+
+# testing error rate
+mean(lda.class_test_1 != std_data_test$V58)
+mean(qda.class_test_1 != std_data_test$V58)
+```
+
+\newpage
+## Version 2 transformed dataset
+
+```{r}
+# Generate Linear Discriminant Analysis Classifier
+lda.fit_2 <- lda(V58 ~ ., data = log_data_train)
+
+#Generate Quadratic Discriminant Analysis Classifier
+qda.fit_2 <- qda(V58 ~ ., data = log_data_train)  
+
+# apply the LDA and QDA classifier to the training dataset
+lda.prep_train_2 <- predict(lda.fit_2, log_data_train)
+lda.class_train_2 <- lda.prep_train_2$class 
+
+qda.prep_train_2 <- predict(qda.fit_2, log_data_train)
+qda.class_train_2 <- qda.prep_train_2$class
+
+# training error rate
+mean(lda.class_train_2 != log_data_train$V58) # LDA
+mean(qda.class_train_2 != log_data_train$V58) # QDA
+```
+
+```{r}
+# apply the LDA and QDA classifier to the testing dataset
+lda.prep_test_2 <- predict(lda.fit_2, log_data_test)
+lda.class_test_2 <- lda.prep_test_2$class 
+
+qda.prep_test_2 <- predict(qda.fit_2, log_data_test)
+qda.class_test_2 <- qda.prep_test_2$class
+
+# testing error rate
+mean(lda.class_test_2 != log_data_test$V58)
+mean(qda.class_test_2 != log_data_test$V58)
+```
+
+\newpage
+# Part (d)
+
+Apply linear and nonlinear support vector machine classifiers to each version of the data. What are the classification errors (training and test)?
+
+## Version 1 standardized dataset
+
+```{r}
+library(e1071)
+
+svm_std_train <- std_data_train
+svm_std_train[, 58] <- as.factor(svm_std_train[, 58])
+
+svm_std_test <- std_data_test
+svm_std_test[, 58] <- as.factor(svm_std_test[, 58])
+```
+
+```{r}
+# Fit a linear support vector classifier
+svmfit.linear_1 <- svm(V58 ~ ., data = svm_std_train, 
+                 kernel = "linear", cost = 0.5, scale=FALSE)
+
+# apply the classifier to training dataset
+pred.linear_train_1 <- predict(svmfit.linear_1, svm_std_train)
+
+mean(pred.linear_train_1 != svm_std_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.linear_test_1 <- predict(svmfit.linear_1, svm_std_test)
+
+mean(pred.linear_test_1 != svm_std_test$V58) # tesitng error rate
+```
+
+```{r}
+# Fit a support vector classifier with Gaussian kernel
+svmfit.gaussian_1 <- svm(V58 ~ ., data = svm_std_train,
+                         kernel="radial", gamma = 0.1, cost = 2)
+
+# apply the classifier to training dataset
+pred.gaussian_train_1 <- predict(svmfit.gaussian_1, svm_std_train)
+
+mean(pred.gaussian_train_1 != svm_std_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.gaussian_test_1 <- predict(svmfit.gaussian_1, svm_std_test)
+
+mean(pred.gaussian_test_1 != svm_std_test$V58) # testing error rate
+```
+
+```{r}
+# Fit a support vector classifier with Polynomial kernel SVM
+svmfit.polynomial_1 <- svm(V58 ~ ., data = svm_std_train,
+                         kernel="polynomial", degree = 1)
+# apply the classifier to training dataset
+pred.polynomial_train_1 <- predict(svmfit.polynomial_1, svm_std_train)
+
+mean(pred.polynomial_train_1 != svm_std_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.polynomial_test_1 <- predict(svmfit.polynomial_1, svm_std_test)
+
+mean(pred.polynomial_test_1 != svm_std_test$V58) # testing error rate
+```
+\newpage
+## Version 2 transformed dataset
+
+```{r}
+svm_log_train <- log_data_train
+svm_log_train[, 58] <- as.factor(svm_log_train[, 58])
+
+svm_log_test <- log_data_test
+svm_log_test[, 58] <- as.factor(svm_log_test[, 58])
+```
+
+```{r}
+# Fit a linear support vector classifier
+svmfit.linear_2 <- svm(V58 ~ ., data = svm_log_train, 
+                 kernel = "linear", cost = 0.1, scale=FALSE)
+
+# apply the classifier to training dataset
+pred.linear_train_2 <- predict(svmfit.linear_2, svm_log_train)
+
+mean(pred.linear_train_2 != svm_log_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.linear_test_2 <- predict(svmfit.linear_2, svm_log_test)
+
+mean(pred.linear_test_2 != svm_log_test$V58) # tesitng error rate
+```
+
+```{r}
+# Fit a support vector classifier with Gaussian kernel
+svmfit.gaussian_2 <- svm(V58 ~ ., data = svm_log_train,
+                         kernel="radial", gamma = 0.01, cost = 0.1)
+
+# apply the classifier to training dataset
+pred.gaussian_train_2 <- predict(svmfit.gaussian_2, svm_log_train)
+
+mean(pred.gaussian_train_2 != svm_log_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.gaussian_test_2 <- predict(svmfit.gaussian_2, svm_log_test)
+
+mean(pred.gaussian_test_2 != svm_log_test$V58) # tesitng error rate
+```
+
+```{r}
+# Fit a support vector classifier with Polynomial kernel SVM
+svmfit.polynomial_2 <- svm(V58 ~ ., data = svm_log_train,
+                         kernel="polynomial", degree = 1)
+# apply the classifier to training dataset
+pred.polynomial_train_2 <- predict(svmfit.polynomial_2, svm_log_train)
+
+mean(pred.polynomial_train_2 != svm_log_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.polynomial_test_2 <- predict(svmfit.polynomial_2, svm_log_test)
+
+mean(pred.polynomial_test_2 != svm_log_test$V58) # testing error rate
+```
+\newpage
+## Version 3 discretized dataset
+
+```{r}
+svm_dis_train <- data_train_dis
+svm_dis_train[, 58] <- as.factor(svm_dis_train[, 58])
+
+svm_dis_test <- data_test_dis
+svm_dis_test[, 58] <- as.factor(svm_dis_test[, 58])
+```
+
+```{r}
+# Fit a linear support vector classifier
+svmfit.linear_3 <- svm(V58 ~ ., data = svm_dis_train, 
+                 kernel = "linear", cost = 0.2, scale=FALSE)
+
+# apply the classifier to training dataset
+pred.linear_train_3 <- predict(svmfit.linear_3, svm_dis_train)
+
+mean(pred.linear_train_3 != svm_dis_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.linear_test_3 <- predict(svmfit.linear_3, svm_dis_test)
+
+mean(pred.linear_test_3 != svm_dis_test$V58) # tesitng error rate
+```
+
+```{r}
+# Fit a support vector classifier with Gaussian kernel
+svmfit.gaussian_3 <- svm(V58 ~ ., data = svm_dis_train,
+                         kernel="radial", gamma = 0.1, cost = 0.2)
+
+# apply the classifier to training dataset
+pred.gaussian_train_3 <- predict(svmfit.gaussian_3, svm_dis_train)
+
+mean(pred.gaussian_train_3 != svm_dis_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.gaussian_test_3 <- predict(svmfit.gaussian_3, svm_dis_test)
+
+mean(pred.gaussian_test_3 != svm_dis_test$V58) # tesitng error rate
+```
+
+```{r}
+# Fit a support vector classifier with Polynomial kernel SVM
+svmfit.polynomial_3 <- svm(V58 ~ ., data = svm_dis_train,
+                         kernel="polynomial", degree = 1)
+# apply the classifier to training dataset
+pred.polynomial_train_3 <- predict(svmfit.polynomial_3, svm_dis_train)
+
+mean(pred.polynomial_train_3 != svm_dis_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.polynomial_test_3 <- predict(svmfit.polynomial_3, svm_dis_test)
+
+mean(pred.polynomial_test_3 != svm_dis_test$V58) # testing error rate
+```
+\newpage
+## Summary of Classification Errors
+```{r}
+library(knitr)
+df = data.frame(version= c("version1train", "version1test","version2train","version2test","version3train","version3test"),
+                Logistic=c(0.07173133, 0.07105606, 0.06586241, 0.07366362, 0.05705902, 0.08083442),
+                LDA = c(0.1017281, 0.1029987, 0.1066188, 0.1212516, "NaN", "NaN"),
+                QDA = c(0.1786762, 0.1747066, 0.1744376, 0.1825293, "NaN", "NaN"),
+                svmLinear = c(0.06553635, 0.06910039, 0.06814477, 0.06910039, 0.05934138, 0.07040417),
+                svmGaussian = c(0.01532442, 0.06258149, 0.08183893, 0.08474576, 0.05901532, 0.0684485),
+                svmPolynomial = c(0.07727421, 0.07953064, 0.07368764, 0.07757497, 0.06912292, 0.07692308))
+
+kable(df)
+```
+
+From the table above, we can conclude that with different argument values we can have a Gaussian kernel svm model with lower error rate compared to before. 
+
+But we can also observe that even without the version 3 training and test error rates, the LDA section has lower rates in error than the QDA for the version 1 training and test errors and the version 2 training and test errors, respectively. We can also see that the error rates for the logistiic regression and  Linear Kernal svm model are almost close with each other.
+
+We still stand with our main conclusion overall that we have a lower error with the Gaussian kernal svm model mentioned above.
+
+## Recommended Method
+Finally, use either a single method with properly chosen tuning parameter or a combination of several methods to design a classifier with test error rate as small as possible. Describe your recommended method, and report its performance.
+
+Since the Gaussian kernel svm has the lowest average error rate among the above methods, I will choose tuning the parameter of the Gaussian kernel svm model. Though we hope to get a lower error rate, the training error rate can be misleading on representing the error rate for testing data. Thus while tuning, we also need to look at the error rate for both training data and testing data.
+```{r}
+# Fit a support vector classifier with Gaussian kernel
+svmfit.gaussian_1 <- svm(V58 ~ ., data = svm_std_train,
+                         kernel="radial", gamma = 0.01, cost = 20)
+
+# apply the classifier to training dataset
+pred.gaussian_train_1 <- predict(svmfit.gaussian_1, svm_std_train)
+
+mean(pred.gaussian_train_1 != svm_std_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.gaussian_test_1 <- predict(svmfit.gaussian_1, svm_std_test)
+
+mean(pred.gaussian_test_1 != svm_std_test$V58) # testing error rate
+```
+
+```{r}
+# Fit a support vector classifier with Gaussian kernel
+svmfit.gaussian_2 <- svm(V58 ~ ., data = svm_log_train,
+                         kernel="radial", gamma = 0.01, cost = 5)
+
+# apply the classifier to training dataset
+pred.gaussian_train_2 <- predict(svmfit.gaussian_2, svm_log_train)
+
+mean(pred.gaussian_train_2 != svm_log_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.gaussian_test_2 <- predict(svmfit.gaussian_2, svm_log_test)
+
+mean(pred.gaussian_test_2 != svm_log_test$V58) # tesitng error rate
+```
+
+```{r}
+# Fit a support vector classifier with Gaussian kernel
+svmfit.gaussian_3 <- svm(V58 ~ ., data = svm_dis_train,
+                         kernel="radial", gamma = 0.1, cost = 12)
+
+# apply the classifier to training dataset
+pred.gaussian_train_3 <- predict(svmfit.gaussian_3, svm_dis_train)
+
+mean(pred.gaussian_train_3 != svm_dis_train$V58) # training error rate
+
+# apply the classifier to testing dataset
+pred.gaussian_test_3 <- predict(svmfit.gaussian_3, svm_dis_test)
+
+mean(pred.gaussian_test_3 != svm_dis_test$V58) # tesitng error rate
+```
+
+```{r}
+library(knitr)
+df = data.frame(version= c("version1train", "version1test","version2train","version2test","version3train","version3test"),
+                Logistic=c(0.07173133, 0.07105606, 0.06586241, 0.07366362, 0.05705902, 0.08083442),
+                LDA = c(0.1017281, 0.1029987, 0.1066188, 0.1212516, "NaN", "NaN"),
+                QDA = c(0.1786762, 0.1747066, 0.1744376, 0.1825293, "NaN", "NaN"),
+                svmLinear = c(0.06553635, 0.06910039, 0.06814477, 0.06910039, 0.05934138, 0.07040417),
+                svmGaussian = c(0.01532442, 0.06258149, 0.08183893, 0.08474576, 0.05901532, 0.0684485),
+                svmPolynomial = c(0.07727421, 0.07953064, 0.07368764, 0.07757497, 0.06912292, 0.07692308),
+                svmGaussian2 = c( 0.02869253, 0.05345502, 0.04597326, 0.05801825, 0.01793283, 0.04563233))
+
+kable(df)
+```
+
+From the table above, we can conclude that with different argument values we can have a Gaussian kernel svm model with lower error rate compares to before.
+
+But we can also observe again that even without the version 3 training and test error rates, the LDA section has lower rates in error than the QDA for the version 1 training and test errors and the version 2 training and test errors, respectively. We can also see again that the error rates for the logistiic regression and  Linear Kernal svm model are almost close with each other.
+
+We still stand with again our main conclusion overall that we have a lower error rate with the Gaussian kernal svm model mentioned above.
+
+
+Contributions: Both Xueyi Wan and Yishan Li contributed by creating the code for most of the project. Xueyi did the code for almost all the problems along with adding the BH procedure code. Yishan and I, Austin John Felices, worked on the last two parts together where Yishan created the first Summary of Classification Errors table and both of us added the conclusions we can draw from this table, in fatc both tables for the last two parts. Yishan also added the polynomial kernal for the SVM question and decided to best use a tuning the parameter of the Gaussian kernel SVM model because of its lowest average error rate. I then checked over the entire project to see if any codes or comments needed edits or changes, wrote the contributions section, knitted to pdf and turned in the project.
